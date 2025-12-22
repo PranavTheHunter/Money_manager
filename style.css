@@ -1,0 +1,152 @@
+:root {
+    /* Light Theme (Default) */
+    --bg: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #3b82f6;
+    --success: #10b981; /* Standard Green */
+    --danger: #ef4444;  /* Standard Red */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --input-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+    /* Dark Theme Override */
+    --bg: #111827;
+    --card-bg: #1f2937;
+    --text-main: #f9fafb;
+    --text-muted: #9ca3af;
+    --border: #374151;
+    --primary: #60a5fa;
+    --success: #34d399;
+    --danger: #f87171;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --input-bg: #111827;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--bg);
+    color: var(--text-main);
+    transition: background-color 0.3s, color 0.3s;
+    margin: 0; padding: 20px;
+}
+
+.container { max-width: 900px; margin: 0 auto; }
+
+/* --- LOGIN FORM (Eye Catching) --- */
+.auth-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(17, 24, 39, 0.8); /* Dark blur backdrop */
+    backdrop-filter: blur(8px);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 999;
+}
+.auth-card {
+    background: white; width: 100%; max-width: 380px;
+    padding: 40px; border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    text-align: center;
+}
+[data-theme="dark"] .auth-card { background: #1f2937; color: white; }
+
+.logo-icon {
+    font-size: 3rem; color: var(--primary); margin-bottom: 10px;
+}
+.auth-header h2 { margin: 0 0 5px 0; }
+.auth-header p { color: var(--text-muted); margin: 0 0 30px 0; }
+
+.input-group {
+    position: relative; margin-bottom: 15px;
+}
+.input-group i {
+    position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted);
+}
+.input-group input {
+    padding-left: 40px; /* Space for icon */
+}
+
+.auth-btn {
+    width: 100%; padding: 12px; border: none; border-radius: 12px;
+    font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: transform 0.1s;
+}
+.auth-btn:active { transform: scale(0.98); }
+.auth-btn.login { background: var(--primary); color: white; }
+.auth-btn.signup { background: transparent; border: 2px solid var(--border); color: var(--text-main); }
+[data-theme="dark"] .auth-btn.signup { border-color: #4b5563; }
+
+/* --- APP UI --- */
+.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.brand { font-size: 1.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+
+.header-actions { display: flex; gap: 10px; }
+.theme-toggle {
+    background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main);
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    display: flex; justify-content: center; align-items: center; font-size: 1.2rem;
+}
+
+.card, .actions, .analysis-box {
+    background: var(--card-bg); border: 1px solid var(--border);
+    padding: 20px; border-radius: 16px; margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
+.card .amount { font-size: 1.6rem; font-weight: 700; margin-top: 5px; }
+
+/* Inputs */
+input, select {
+    width: 100%; padding: 12px; background: var(--input-bg);
+    border: 1px solid var(--border); color: var(--text-main);
+    border-radius: 8px; box-sizing: border-box; margin-bottom: 10px;
+}
+input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+/* Buttons */
+.submit-btn {
+    width: 100%; padding: 12px; border: none; border-radius: 8px;
+    font-weight: 600; cursor: pointer; color: white;
+}
+.income-btn { background: var(--success); }
+.expense-btn { background: var(--danger); }
+.transfer-btn { background: var(--primary); }
+.small-btn { width: auto; background: var(--text-muted); padding: 0 20px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--bg); padding: 5px; border-radius: 10px; }
+.tab-btn {
+    flex: 1; padding: 8px; border: none; background: transparent;
+    border-radius: 6px; cursor: pointer; color: var(--text-muted); font-weight: 600;
+}
+.tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+/* Chart Toggles */
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.toggle-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+}
+.toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* History */
+.transaction-list { list-style: none; padding: 0; margin: 0; }
+.history-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.history-item:last-child { border: none; }
+.val-green { color: var(--success); font-weight: bold; }
+.val-red { color: var(--danger); font-weight: bold; }
+
+.status-pill {
+    background: var(--primary); color: white; display: inline-block;
+    padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 15px;
+}
+
+/* Animations */
+.hidden { display: none; }
+.row { display: flex; gap: 10px; }

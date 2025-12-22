@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Flow Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo-icon"><i class="ri-wallet-3-line"></i></div>
+            <h2>Welcome Back</h2>
+            <p>Secure Financial Workspace</p>
+        </div>
+        <div class="auth-form">
+            <div class="input-group">
+                <i class="ri-mail-line"></i>
+                <input type="email" id="authEmail" placeholder="Email Address">
+            </div>
+            <div class="input-group">
+                <i class="ri-lock-line"></i>
+                <input type="password" id="authPass" placeholder="Password">
+            </div>
+            <button class="auth-btn login" onclick="handleAuth('login')">Log In</button>
+            <button class="auth-btn signup" onclick="handleAuth('signup')">Create Account</button>
+        </div>
+        <p id="authMsg"></p>
+    </div>
+</div>
+
+<div class="container" id="appContainer">
+    <div class="header-row">
+        <div class="brand">
+            <i class="ri-bar-chart-grouped-line"></i> MONEY FLOW
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="ri-moon-line" id="themeIcon"></i>
+            </button>
+            <button onclick="handleLogout()" class="logout-btn">Log Out</button>
+        </div>
+    </div>
+
+    <div id="status" class="status-pill"><i class="ri-loader-4-line"></i> Syncing...</div>
+
+    <div class="card graph-container">
+        <div class="chart-header">
+            <h3>Analytics</h3>
+            <div class="chart-toggles">
+                <button class="toggle-btn active" id="btnLine" onclick="switchChart('line')">
+                    <i class="ri-line-chart-line"></i> Sources
+                </button>
+                <button class="toggle-btn" id="btnCandle" onclick="switchChart('candlestick')">
+                    <i class="ri-bar-chart-box-line"></i> Monthly Net Worth
+                </button>
+            </div>
+        </div>
+        <div id="mainChart"></div>
+    </div>
+
+    <div class="dashboard" id="accountCards"></div>
+
+    <div class="actions compact-actions">
+        <input type="text" id="newAccountName" placeholder="New Wallet Name...">
+        <button class="submit-btn small-btn" onclick="createNewAccount()">+ Create</button>
+    </div>
+
+    <div class="actions">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('income', event)">Income</button>
+            <button class="tab-btn" onclick="switchTab('expense', event)">Expense</button>
+            <button class="tab-btn" onclick="switchTab('transfer', event)">Transfer</button>
+        </div>
+
+        <div id="incomeForm" class="form-section">
+            <div class="row">
+                <input type="number" id="incAmount" placeholder="Amount">
+                <input type="date" id="incDate"> 
+            </div>
+            <select id="incAccount" class="account-select"></select>
+            <input type="text" id="incReason" placeholder="Source (e.g. Salary)">
+            <button class="submit-btn income-btn" onclick="addTransaction('income')">Add Income</button>
+        </div>
+
+        <div id="expenseForm" class="form-section hidden">
+            <div class="row">
+                <input type="number" id="expAmount" placeholder="Amount">
+                <input type="date" id="expDate">
+            </div>
+            <select id="expAccount" class="account-select"></select>
+            <input type="text" id="expReason" placeholder="Item (e.g. Rent)">
+            <button class="submit-btn expense-btn" onclick="addTransaction('expense')">Add Expense</button>
+        </div>
+
+        <div id="transferForm" class="form-section hidden">
+            <div class="row">
+                <input type="number" id="transAmount" placeholder="Amount">
+                <input type="date" id="transDate">
+            </div>
+            <div class="row">
+                <select id="transFrom" class="account-select"></select>
+                <select id="transTo" class="account-select"></select>
+            </div>
+            <button class="submit-btn transfer-btn" onclick="transferMoney()">Transfer</button>
+        </div>
+    </div>
+
+    <div class="analysis-box">
+        <h3 class="section-title">Recent Activity</h3>
+        <ul class="transaction-list" id="historyList"></ul>
+    </div>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
