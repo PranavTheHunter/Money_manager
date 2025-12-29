@@ -4,7 +4,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 
 // --- PASTE YOUR CONFIG HERE ---
 const firebaseConfig = {
- apiKey: "AIzaSyDqGpkidq1gyAXyBSdQm9YsCRt5xMP09z0",
+    apiKey: "AIzaSyDqGpkidq1gyAXyBSdQm9YsCRt5xMP09z0",
     authDomain: "money-manager-63c87.firebaseapp.com",
     projectId: "money-manager-63c87",
     storageBucket: "money-manager-63c87.firebasestorage.app",
@@ -20,7 +20,6 @@ const auth = getAuth(app);
 let currentUser = null;
 let appData = { accounts: [], transactions: [] };
 let chartInstance = null;
-let currentChartType = 'line'; // Default to Line chart
 
 // --- THEME LOGIC ---
 window.toggleTheme = () => {
@@ -102,17 +101,14 @@ function renderDashboard() {
     const container = document.getElementById('accountCards');
     container.innerHTML = '';
     
-    // Calculate Total
     const netWorth = appData.accounts.reduce((sum, a) => sum + a.balance, 0);
     
-    // Total Card (Special Style)
     container.innerHTML += `
         <div class="card" style="border-left: 4px solid var(--primary)">
             <h3 style="margin:0; font-size:0.9rem; color:var(--text-muted)">TOTAL NET WORTH</h3>
             <div class="amount" style="color:var(--primary)">$${netWorth.toLocaleString()}</div>
         </div>`;
 
-    // Individual Cards
     appData.accounts.forEach(acc => {
         container.innerHTML += `
             <div class="card">
@@ -147,115 +143,91 @@ function renderHistory() {
     });
 }
 
-// --- HYBRID CHART ENGINE ---
+// --- NEW LINE CHART ENGINE ---
 function renderChart() {
     if (!appData.transactions.length) return;
 
-    // Sort transactions
+    // 1. Sort transactions by date
     const sortedTx = [...appData.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
     
-    let series = [];
-    let chartType = 'line';
-    let options = {};
-
-    if (currentChartType === 'line') {
-        // --- MODE 1: INDIVIDUAL LINES PER ACCOUNT ---
-        chartType = 'line';
-        
-        // We need to build a timeline for EACH account
-        const accountData = {};
-        appData.accounts.forEach(acc => accountData[acc.id] = { name: acc.name, balance: 0, dataPoints: [] });
-
-        // Iterate through history to build balance over time
-        // Note: Ideally we replay history. For simplicity, we just plot points where transactions happen.
-        // A smarter way: replay history day by day.
-        
-        // 1. Initialize balances map
-        const runningBalances = {};
-        appData.accounts.forEach(acc => runningBalances[acc.id] = 0);
-
-        sortedTx.forEach(t => {
-            const accId = t.account || t.from; // Handle transfer 'from'
-            
-            // Logic for Income/Expense
-            if(t.type === 'income') runningBalances[t.account] += t.amount;
-            if(t.type === 'expense') runningBalances[t.account] -= t.amount;
-            
-            // Logic for Transfer
-            if(t.type === 'transfer') {
-                runningBalances[t.from] -= t.amount;
-                runningBalances[t.to] += t.amount;
-                // Record point for 'to' account as well
-                accountData[t.to].dataPoints.push({ x: new Date(t.date).getTime(), y: runningBalances[t.to] });
-            }
-
-            // Record point for the primary account involved
-            if (accountData[accId]) {
-                accountData[accId].dataPoints.push({ x: new Date(t.date).getTime(), y: runningBalances[accId] });
-            }
-        });
-
-        // Convert to Apex Series
-        series = Object.values(accountData).map(acc => ({
+    // 2. Prepare data structure for multiple series
+    // Map account ID -> { name, data: [{x, y}] }
+    const seriesMap = {};
+    
+    // Initialize map with all current accounts
+    appData.accounts.forEach(acc => {
+        seriesMap[acc.id] = {
             name: acc.name,
-            data: acc.dataPoints
-        }));
+            currentBal: 0,
+            data: []
+        };
+    });
 
-    } else {
-        // --- MODE 2: TOTAL NET WORTH CANDLES ---
-        chartType = 'candlestick';
-        
-        let currentBalance = 0;
-        const monthlyData = {}; 
+    // 3. Replay history to build the lines
+    // We assume starting balance was 0 for all
+    sortedTx.forEach(t => {
+        const dateTimestamp = new Date(t.date).getTime();
 
-        sortedTx.forEach(t => {
-            const monthKey = t.date.substring(0, 7);
-            let prevBalance = currentBalance;
+        // Ensure accounts exist in map (handle deleted/new accounts gracefully)
+        if (t.account && !seriesMap[t.account]) seriesMap[t.account] = { name: "Unknown", currentBal: 0, data: [] };
+        if (t.from && !seriesMap[t.from]) seriesMap[t.from] = { name: "Unknown", currentBal: 0, data: [] };
+        if (t.to && !seriesMap[t.to]) seriesMap[t.to] = { name: "Unknown", currentBal: 0, data: [] };
+
+        if (t.type === 'income') {
+            seriesMap[t.account].currentBal += t.amount;
+            seriesMap[t.account].data.push({ x: dateTimestamp, y: seriesMap[t.account].currentBal });
+        } 
+        else if (t.type === 'expense') {
+            seriesMap[t.account].currentBal -= t.amount;
+            seriesMap[t.account].data.push({ x: dateTimestamp, y: seriesMap[t.account].currentBal });
+        }
+        else if (t.type === 'transfer') {
+            // Update sender
+            seriesMap[t.from].currentBal -= t.amount;
+            seriesMap[t.from].data.push({ x: dateTimestamp, y: seriesMap[t.from].currentBal });
             
-            if (t.type === 'income') currentBalance += t.amount;
-            if (t.type === 'expense') currentBalance -= t.amount;
-            
-            if (!monthlyData[monthKey]) {
-                monthlyData[monthKey] = {
-                    open: prevBalance, high: prevBalance, low: prevBalance, close: currentBalance
-                };
-            }
-            const m = monthlyData[monthKey];
-            if (currentBalance > m.high) m.high = currentBalance;
-            if (currentBalance < m.low) m.low = currentBalance;
-            m.close = currentBalance;
-        });
+            // Update receiver
+            seriesMap[t.to].currentBal += t.amount;
+            seriesMap[t.to].data.push({ x: dateTimestamp, y: seriesMap[t.to].currentBal });
+        }
+    });
 
-        const dataPoints = Object.keys(monthlyData).sort().map(k => {
-            const d = monthlyData[k];
-            return { x: new Date(k + "-01").getTime(), y: [d.open, d.high, d.low, d.close] };
-        });
+    // 4. Convert map to Array for ApexCharts
+    const seriesData = Object.values(seriesMap).map(s => ({
+        name: s.name,
+        data: s.data
+    }));
 
-        series = [{ name: 'Net Worth', data: dataPoints }];
-    }
-
-    // Chart Configuration
+    // 5. Render
     const isDark = document.body.getAttribute('data-theme') === 'dark';
     
-    options = {
-        series: series,
+    const options = {
+        series: seriesData,
         chart: {
-            type: chartType,
+            type: 'line',
             height: 350,
             background: 'transparent',
-            toolbar: { show: false }
+            toolbar: { show: false },
+            zoom: { enabled: false }
         },
         theme: { mode: isDark ? 'dark' : 'light' },
-        stroke: { curve: 'smooth', width: 2 },
-        xaxis: { type: 'datetime' },
-        yaxis: { labels: { formatter: (val) => "$" + val.toFixed(0) } },
-        // Standard Red/Green for candles
-        plotOptions: {
-            candlestick: {
-                colors: { upward: '#10b981', downward: '#ef4444' }
-            }
+        stroke: { curve: 'smooth', width: 3 },
+        xaxis: { 
+            type: 'datetime',
+            tooltip: { enabled: false } 
         },
-        colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'] // Line colors
+        yaxis: { 
+            labels: { formatter: (val) => "$" + val.toFixed(0) } 
+        },
+        colors: ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
+        grid: {
+            borderColor: isDark ? '#374151' : '#e5e7eb',
+            strokeDashArray: 4
+        },
+        legend: {
+            position: 'top',
+            horizontalAlign: 'right'
+        }
     };
 
     if (chartInstance) chartInstance.destroy();
@@ -333,13 +305,6 @@ window.switchTab = (tab, e) => {
     document.getElementById(tab+'Form').classList.remove('hidden');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     e.target.classList.add('active');
-};
-
-window.switchChart = (type) => {
-    currentChartType = type;
-    document.getElementById('btnLine').className = type === 'line' ? 'toggle-btn active' : 'toggle-btn';
-    document.getElementById('btnCandle').className = type === 'candlestick' ? 'toggle-btn active' : 'toggle-btn';
-    renderChart();
 };
 
 function updateDropdowns() {
