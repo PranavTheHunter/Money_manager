@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Money Flow Pro</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.7.0/jspdf.plugin.autotable.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 <body>
@@ -14,7 +17,7 @@
     <div class="auth-card">
         <div class="auth-header">
             <div class="logo-icon"><i class="ri-wallet-3-line"></i></div>
-            <h2>Welcome Back</h2>
+            <h2>Money Flow</h2>
             <p>Secure Financial Workspace</p>
         </div>
         <div class="auth-form">
@@ -48,19 +51,44 @@
 
     <div id="status" class="status-pill"><i class="ri-loader-4-line"></i> Syncing...</div>
 
+    <div class="card" style="margin-bottom: 20px;">
+        <h3 class="section-title"><i class="ri-file-download-line"></i> Export Statement</h3>
+        
+        <div class="report-grid">
+            <div class="input-wrapper">
+                <label>From Date</label>
+                <input type="date" id="reportStart">
+            </div>
+            
+            <div class="input-wrapper">
+                <label>To Date</label>
+                <input type="date" id="reportEnd">
+            </div>
+
+            <div class="input-wrapper">
+                <label>Select Wallet</label>
+                <select id="reportAccount">
+                    <option value="all">All Wallets</option>
+                    </select>
+            </div>
+
+            <div class="input-wrapper">
+                <label>&nbsp;</label> 
+                <button class="submit-btn download-btn" onclick="generatePDF()">
+                    <i class="ri-download-line"></i> Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="card graph-container">
         <div class="chart-header">
-            <h3><i class="ri-line-chart-line"></i> Account Performance</h3>
+            <h3><i class="ri-line-chart-line"></i> Account Trends</h3>
         </div>
         <div id="mainChart"></div>
     </div>
 
     <div class="dashboard" id="accountCards"></div>
-
-    <div class="actions compact-actions">
-        <input type="text" id="newAccountName" placeholder="New Wallet Name...">
-        <button class="submit-btn small-btn" onclick="createNewAccount()">+ Create</button>
-    </div>
 
     <div class="actions">
         <div class="tabs">
@@ -75,7 +103,7 @@
                 <input type="date" id="incDate"> 
             </div>
             <select id="incAccount" class="account-select"></select>
-            <input type="text" id="incReason" placeholder="Source (e.g. Salary)">
+            <input type="text" id="incReason" placeholder="Description (e.g. Salary)">
             <button class="submit-btn income-btn" onclick="addTransaction('income')">Add Income</button>
         </div>
 
@@ -85,7 +113,7 @@
                 <input type="date" id="expDate">
             </div>
             <select id="expAccount" class="account-select"></select>
-            <input type="text" id="expReason" placeholder="Item (e.g. Rent)">
+            <input type="text" id="expReason" placeholder="Description (e.g. Rent)">
             <button class="submit-btn expense-btn" onclick="addTransaction('expense')">Add Expense</button>
         </div>
 
@@ -101,9 +129,14 @@
             <button class="submit-btn transfer-btn" onclick="transferMoney()">Transfer</button>
         </div>
     </div>
+    
+    <div class="actions compact-actions">
+        <input type="text" id="newAccountName" placeholder="New Wallet Name...">
+        <button class="submit-btn small-btn" onclick="createNewAccount()">+ Create</button>
+    </div>
 
     <div class="analysis-box">
-        <h3 class="section-title">Recent Activity</h3>
+        <h3 class="section-title">History Log</h3>
         <ul class="transaction-list" id="historyList"></ul>
     </div>
 </div>
