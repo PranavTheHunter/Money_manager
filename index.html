@@ -36,6 +36,26 @@
     </div>
 </div>
 
+<!-- Cycle Edit Modal -->
+<div id="cycleModal" class="auth-overlay hidden">
+    <div class="auth-card" style="text-align: left; max-width: 400px;">
+        <h3 style="margin-top:0"><i class="ri-calendar-event-line"></i> Update Spend Cycle</h3>
+        <input type="hidden" id="modalAccId">
+        <div class="input-wrapper" style="margin-bottom:12px;">
+            <label>Cycle Start Date</label>
+            <input type="date" id="modalCycleStart">
+        </div>
+        <div class="input-wrapper" style="margin-bottom:15px;">
+            <label>Cycle End Date</label>
+            <input type="date" id="modalCycleEnd">
+        </div>
+        <div class="row">
+            <button class="submit-btn transfer-btn" onclick="saveCycleDates()">Save Changes</button>
+            <button class="submit-btn small-btn" onclick="closeCycleModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <div class="container" id="appContainer">
     <div class="header-row">
         <div class="brand">
@@ -69,7 +89,7 @@
                 <label>Select Wallet</label>
                 <select id="reportAccount">
                     <option value="all">All Wallets</option>
-                    </select>
+                </select>
             </div>
 
             <div class="input-wrapper">
@@ -83,7 +103,8 @@
 
     <div class="card graph-container">
         <div class="chart-header">
-            <h3><i class="ri-line-chart-line"></i> Account Trends</h3>
+            <h3><i class="ri-line-chart-line"></i> Analytics & Trends</h3>
+            <div id="chartAnalytics" class="chart-analytics-row"></div>
         </div>
         <div id="mainChart"></div>
     </div>
@@ -97,12 +118,12 @@
             <button class="tab-btn" onclick="switchTab('transfer', event)">Transfer</button>
         </div>
 
+        <!-- Cleaned Income Form -->
         <div id="incomeForm" class="form-section">
             <div class="row">
                 <input type="number" id="incAmount" placeholder="Amount">
-                <input type="date" id="incDate"> 
+                <select id="incAccount" class="account-select"></select>
             </div>
-            <select id="incAccount" class="account-select"></select>
             <input type="text" id="incReason" placeholder="Description (e.g. Salary)">
             <button class="submit-btn income-btn" onclick="addTransaction('income')">Add Income</button>
         </div>
